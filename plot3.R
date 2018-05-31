@@ -1,5 +1,5 @@
-### Plots a line chart with separate lines for sub metering 1, 2 and 3
-### over time and saves to a png file
+### Plots a line chart of sub metering 1, 2 and 3 over time
+### with separate lines for each and saves to a png file
 
 ## Load data, downloading it if necessary
 data_name <- "household_power_consumption"
