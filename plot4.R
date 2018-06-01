@@ -17,59 +17,50 @@ data_con <- unz(data_zip, data_txt)
 dataset <- read.table(data_con, sep = ";", header = TRUE, 
                       stringsAsFactors = FALSE)
 
-
-## Convert Date variable from string to Date
-dataset$Date <- as.Date(strptime(dataset$Date, format = "%d/%m/%Y"))
+## Create datetime variable
+dataset$datetime <- strptime(paste(dataset$Date, dataset$Time), 
+                             "%d/%m/%Y %H:%M:%S")
 
 ## Subset to keep only relevant dates
-dataset <- subset(dataset, 
-                  Date %in% c(as.Date("2007-02-01"), as.Date("2007-02-02")))
-
+keep <- c(as.Date("2007-02-01"), as.Date("2007-02-02"))
+dataset <- subset(dataset, as.Date(datetime) %in% keep)
 
 ## Plot graphs, saving to a png file
 png(filename = "plot4.png")
 par(mfcol = c(2, 2))
 # Plot line chart of global active power over time
-plot(seq_along(dataset$Time), 
+plot(dataset$datetime, 
      dataset$Global_active_power, 
-     type = "l", xaxt = "n",
+     type = "l",
      xlab = "",
      ylab = "Global Active Power")
-idx_fri <- min(seq_along(weekdays(dataset$Date))[weekdays(dataset$Date) == "Friday"])
-idx_end <- length(dataset$Date)
-axis(side = 1, at = c(0, idx_fri, idx_end), 
-     labels = c("Thu", "Fri", "Sat"))
 # Plot line chart of energy sub metering 1, 2 and 3 (separate lines for each)
 # over time
-plot(seq_along(dataset$Time), 
+plot(dataset$datetime, 
      dataset$Sub_metering_1, 
-     type = "l", xaxt = "n",
+     type = "l",
      xlab = "",
      ylab = "Energy sub metering")
-points(seq_along(dataset$Time), 
-       dataset$Sub_metering_2, 
-       type = "l", col = "red")
-points(seq_along(dataset$Time), 
-       dataset$Sub_metering_3, 
-       type = "l", col = "blue")
-axis(side = 1, at = c(0, idx_fri, idx_end), 
-     labels = c("Thu", "Fri", "Sat"))
+lines(dataset$datetime, 
+      dataset$Sub_metering_2, 
+      col = "red")
+lines(dataset$datetime, 
+      dataset$Sub_metering_3, 
+      col = "blue")
 legend("topright", col = c("black", "red", "blue"), 
        legend = c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"),
        lty = c(1, 1, 1), lwd = c(1, 1, 1), bty = "n")
 # Plot line chart of voltage over time
-plot(seq_along(dataset$Time),
+plot(dataset$datetime,
      dataset$Voltage,
-     type = "l", xaxt = "n",
-     xlab = "datetime", ylab = "Voltage")
-axis(side = 1, at = c(0, idx_fri, idx_end), 
-     labels = c("Thu", "Fri", "Sat"))
+     type = "l",
+     xlab = "datetime", 
+     ylab = "Voltage")
 # Plot line chart of global reactive power over time
-plot(seq_along(dataset$Time),
+plot(dataset$datetime,
      dataset$Global_reactive_power,
-     type = "l", xaxt = "n",
-     xlab = "datetime", ylab = "Global_reactive_power")
-axis(side = 1, at = c(0, idx_fri, idx_end), 
-     labels = c("Thu", "Fri", "Sat"))
+     type = "l",
+     xlab = "datetime", 
+     ylab = "Global_reactive_power")
 # Shut down graphics device
 dev.off()

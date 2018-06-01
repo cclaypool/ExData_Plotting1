@@ -12,24 +12,19 @@ data_con <- unz(data_zip, data_txt)
 dataset <- read.table(data_con, sep = ";", header = TRUE, 
                       stringsAsFactors = FALSE)
 
-
-## Convert Date variable from string to Date
-dataset$Date <- as.Date(strptime(dataset$Date, format = "%d/%m/%Y"))
+## Create datetime variable
+dataset$datetime <- strptime(paste(dataset$Date, dataset$Time), 
+                             "%d/%m/%Y %H:%M:%S")
 
 ## Subset to keep only relevant dates
-dataset <- subset(dataset, 
-                  Date %in% c(as.Date("2007-02-01"), as.Date("2007-02-02")))
+keep <- c(as.Date("2007-02-01"), as.Date("2007-02-02"))
+dataset <- subset(dataset, as.Date(datetime) %in% keep)
 
 ## Plot line chart of global active power over time, saving it to a png file
 png(filename = "plot2.png")
-plot(seq_along(dataset$Time), 
+plot(dataset$datetime, 
      dataset$Global_active_power, 
-     type = "l", xaxt = "n",
+     type = "l",
      xlab = "",
      ylab = "Global Active Power (kilowatts)")
-# Add tick marks to x-axis to show days
-idx_fri <- min(seq_along(weekdays(dataset$Date))[weekdays(dataset$Date) == "Friday"])
-idx_end <- length(dataset$Date)
-axis(side = 1, at = c(0, idx_fri, idx_end), 
-     labels = c("Thu", "Fri", "Sat"))
 dev.off()
